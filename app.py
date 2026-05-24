@@ -1,13 +1,9 @@
-from flask import Flask
-from flask import render_template
-from flask import request
+import streamlit as st
 
-import numpy as np
 import pandas as pd
+import numpy as np
 
 import pickle
-
-app = Flask(__name__)
 
 # =========================
 # LOAD MODEL
@@ -21,30 +17,52 @@ scaler = pickle.load(
 )
 
 # =========================
-# HOME
+# TITLE
 # =========================
-@app.route('/')
-def home():
-    return render_template('index.html')
+st.title("Prediksi Harga Rumah")
+
+st.write(
+    "Masukkan data rumah untuk memprediksi harga."
+)
 
 # =========================
-# PREDICT
+# INPUT USER
 # =========================
-@app.route('/predict', methods=['POST'])
+LB = st.number_input(
+    "Luas Bangunan",
+    min_value=1
+)
 
-def predict():
+LT = st.number_input(
+    "Luas Tanah",
+    min_value=1
+)
 
-    LB = float(request.form['LB'])
-    LT = float(request.form['LT'])
-    KT = float(request.form['KT'])
-    KM = float(request.form['KM'])
-    GRS = float(request.form['GRS'])
+KT = st.number_input(
+    "Kamar Tidur",
+    min_value=1
+)
+
+KM = st.number_input(
+    "Kamar Mandi",
+    min_value=1
+)
+
+GRS = st.number_input(
+    "Garasi",
+    min_value=0
+)
+
+# =========================
+# BUTTON
+# =========================
+if st.button("Prediksi"):
 
     TOTAL_RUANG = KT + KM
 
     HARGA_PER_LT = 5000000
 
-    data = pd.DataFrame({
+    rumah_baru = pd.DataFrame({
 
         'LB': [LB],
         'LT': [LT],
@@ -57,30 +75,34 @@ def predict():
     })
 
     # scaling
-    data_scaled = scaler.transform(data)
+    rumah_scaled = scaler.transform(
+        rumah_baru
+    )
 
     # predict
-    pred_log = model.predict(data_scaled)
+    pred_log = model.predict(
+        rumah_scaled
+    )
 
     # inverse log
-    harga = np.expm1(pred_log)[0]
+    harga = np.expm1(
+        pred_log
+    )[0]
 
-    # format
+    # format harga
     if harga >= 1_000_000_000:
 
-        hasil = f"{harga/1_000_000_000:.2f} M"
+        hasil = (
+            f"{harga/1_000_000_000:.2f} M"
+        )
 
     else:
 
-        hasil = f"{harga/1_000_000:.2f} JT"
+        hasil = (
+            f"{harga/1_000_000:.2f} JT"
+        )
 
-    return render_template(
-        'index.html',
-        prediction=hasil
+    # output
+    st.success(
+        f"Prediksi Harga Rumah: {hasil}"
     )
-
-# =========================
-# RUN
-# =========================
-if __name__ == '__main__':
-    app.run(debug=False)
