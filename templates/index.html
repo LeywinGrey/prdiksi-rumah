@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Prediksi Harga Rumah</title>
+</head>
+
+<body>
+
+    <h1>Prediksi Harga Rumah</h1>
+
+    <form action="/predict" method="post">
+
+        <input type="number" name="LB" placeholder="Luas Bangunan">
+
+        <input type="number" name="LT" placeholder="Luas Tanah">
+
+        <input type="number" name="KT" placeholder="Kamar Tidur">
+
+        <input type="number" name="KM" placeholder="Kamar Mandi">
+
+        <input type="number" name="GRS" placeholder="Garasi">
+
+        <button type="submit">
+            Prediksi
+        </button>
+
+    </form>
+
+    {% if prediction %}
+
+        <h2>
+            Prediksi Harga:
+            {{ prediction }}
+        </h2>
+
+    {% endif %}
+
+</body>
+</html>
