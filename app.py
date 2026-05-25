@@ -1,355 +1,466 @@
 import streamlit as st
 import numpy as np
 import plotly.graph_objects as go
-import plotly.express as px
+import math
 
-# ─── PAGE CONFIG ───────────────────────────────────────────────────────────────
-st.set_page_config(
-    page_title="propAI Jakarta",
-    page_icon="🏠",
-    layout="wide",
-)
+# ── PAGE CONFIG ─────────────────────────────────────────────────────────────────
+st.set_page_config(page_title="propAI Jakarta", page_icon="🏠", layout="wide")
 
-# ─── CUSTOM CSS ────────────────────────────────────────────────────────────────
+# ── CSS ─────────────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
-  /* Global */
-  [data-testid="stAppViewContainer"] { background: #050816; }
-  [data-testid="stHeader"] { background: transparent; }
-  [data-testid="stSidebar"] { background: #0d1117; }
-  .block-container { padding: 2rem 2rem 2rem 2rem; max-width: 1200px; }
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap');
 
-  /* Typography */
-  h1, h2, h3, h4, p, label, div { color: #e5e7eb !important; }
+/* ── Reset & Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body, [data-testid="stAppViewContainer"],
+[data-testid="stMainBlockContainer"] {
+  background: #1a1c23 !important;
+  font-family: 'DM Sans', sans-serif !important;
+}
+[data-testid="stHeader"] { background: transparent !important; }
+.block-container {
+  padding: 0 !important;
+  max-width: 100% !important;
+}
+section[data-testid="stMain"] > div { padding: 0 !important; }
 
-  /* Cards */
-  .card {
-    background: #111827;
-    border: 1px solid #1e2736;
-    border-radius: 20px;
-    padding: 1.5rem;
-    margin-bottom: 1rem;
-  }
+/* ── App wrapper ── */
+.app-wrap {
+  background: #1a1c23;
+  min-height: 100vh;
+  padding: 1.5rem 2rem 3rem;
+  max-width: 1060px;
+  margin: 0 auto;
+}
 
-  /* Result big number */
-  .result-amount {
-    font-size: 2.8rem;
-    font-weight: 700;
-    color: #ffffff !important;
-    letter-spacing: -0.04em;
-    line-height: 1.1;
-    text-align: center;
-  }
-  .result-label {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    color: #4b5563 !important;
-    letter-spacing: .08em;
-    text-align: center;
-    margin-bottom: 0.5rem;
-  }
-  .result-sub {
-    font-size: 0.75rem;
-    color: #4b5563 !important;
-    text-align: center;
-    margin-top: 0.5rem;
-  }
+/* ── Topbar ── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 1.2rem;
+  border-bottom: 1px solid #2c2f3a;
+  margin-bottom: 1.8rem;
+}
+.logo {
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #e8eaf0;
+  letter-spacing: -0.02em;
+}
+.logo .ai { color: #4f8ef7; }
+.badge {
+  background: #22253a;
+  color: #8ba7e8;
+  border: 1px solid #2c3555;
+  border-radius: 999px;
+  padding: 5px 16px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
 
-  /* Stat box */
-  .stat-box {
-    background: #0d1117;
-    border: 1px solid #1e2736;
-    border-radius: 14px;
-    padding: 1rem;
-    text-align: center;
-  }
-  .stat-val { font-size: 1.2rem; font-weight: 700; color: #ffffff !important; }
-  .stat-lbl { font-size: 0.7rem; color: #4b5563 !important; margin-top: 4px; }
+/* ── Main grid ── */
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
 
-  /* Insight dot */
-  .insight-item {
-    display: flex;
-    gap: 10px;
-    padding: 9px 0;
-    border-bottom: 1px solid #1e2736;
-    font-size: 0.82rem;
-    color: #6b7280 !important;
-    align-items: flex-start;
-    line-height: 1.5;
-  }
-  .insight-item:last-child { border-bottom: none; }
-  .dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: #2563eb;
-    margin-top: 5px;
-    flex-shrink: 0;
-  }
+/* ── Panel ── */
+.panel {
+  background: #22253a;
+  border: 1px solid #2c2f42;
+  border-radius: 14px;
+  padding: 1.5rem;
+}
 
-  /* Section label */
-  .section-label {
-    font-size: 0.68rem;
-    font-weight: 600;
-    color: #4b5563 !important;
-    text-transform: uppercase;
-    letter-spacing: .1em;
-    margin-bottom: 1rem;
-  }
+/* ── Section label ── */
+.sec-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #5a6070;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  margin-bottom: 1.1rem;
+}
 
-  /* Badge */
-  .badge {
-    display: inline-block;
-    background: #111827;
-    color: #93c5fd !important;
-    border: 1px solid #1e293b;
-    border-radius: 999px;
-    padding: 4px 14px;
-    font-size: 0.72rem;
-  }
+/* ── Field label ── */
+.f-label {
+  font-size: 0.78rem;
+  color: #8b90a0;
+  margin-bottom: .4rem;
+  display: block;
+}
 
-  /* Streamlit number_input & slider override */
-  [data-testid="stNumberInput"] input,
-  [data-testid="stTextInput"] input {
-    background: #0d1117!important;
-    border: 1px solid #1e2736!important;
-    color: #ffffff!important;
-    border-radius: 10px!important;
-  }
-  [data-testid="stSlider"] [data-baseweb="slider"] { color: #2563eb; }
+/* ── Field grid ── */
+.field-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem 1.2rem;
+  margin-bottom: 1.2rem;
+}
 
-  /* Button */
-  .stButton > button {
-    width: 100%;
-    background: #2563eb!important;
-    color: #fff!important;
-    border: none!important;
-    border-radius: 12px!important;
-    font-size: 1rem!important;
-    font-weight: 600!important;
-    height: 52px!important;
-    transition: background 0.15s;
-  }
-  .stButton > button:hover { background: #1d4ed8!important; }
+/* ── Number input override ── */
+div[data-testid="stNumberInput"] {
+  margin-bottom: 0 !important;
+}
+div[data-testid="stNumberInput"] label {
+  font-size: 0.78rem !important;
+  color: #8b90a0 !important;
+  font-family: 'DM Sans', sans-serif !important;
+  margin-bottom: 4px !important;
+}
+div[data-testid="stNumberInput"] > div {
+  background: #161820 !important;
+  border: 1px solid #2c2f42 !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+}
+div[data-testid="stNumberInput"] input {
+  background: transparent !important;
+  color: #e8eaf0 !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 0.95rem !important;
+  font-weight: 500 !important;
+  border: none !important;
+  padding: 10px 12px !important;
+}
+div[data-testid="stNumberInput"] button {
+  background: transparent !important;
+  border: none !important;
+  color: #5a6070 !important;
+}
+div[data-testid="stNumberInput"] button:hover { color: #e8eaf0 !important; }
+
+/* ── Chip buttons ── */
+div[data-testid="stHorizontalBlock"] button {
+  background: #161820 !important;
+  border: 1px solid #2c2f42 !important;
+  color: #8b90a0 !important;
+  border-radius: 999px !important;
+  font-size: 0.72rem !important;
+  font-family: 'DM Sans', sans-serif !important;
+  padding: 4px 10px !important;
+  height: auto !important;
+  min-height: 0 !important;
+  font-weight: 500 !important;
+  transition: all 0.15s !important;
+}
+div[data-testid="stHorizontalBlock"] button:hover {
+  background: #1c2b55 !important;
+  color: #93c5fd !important;
+  border-color: #2563eb !important;
+}
+
+/* ── Predict button ── */
+div[data-testid="stButton"]:not([data-testid="stHorizontalBlock"] div[data-testid="stButton"]) button {
+  width: 100% !important;
+  background: #2c2f42 !important;
+  color: #e8eaf0 !important;
+  border: 1px solid #3a3f58 !important;
+  border-radius: 10px !important;
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
+  height: 48px !important;
+  font-family: 'DM Sans', sans-serif !important;
+  letter-spacing: -0.01em !important;
+  transition: background 0.15s !important;
+}
+div[data-testid="stButton"]:not([data-testid="stHorizontalBlock"] div[data-testid="stButton"]) button:hover {
+  background: #363b56 !important;
+}
+
+/* ── Result card ── */
+.result-card {
+  background: #22253a;
+  border: 1px solid #2c2f42;
+  border-radius: 14px;
+  padding: 2rem 1.5rem 1.5rem;
+  text-align: center;
+  margin-bottom: 1.25rem;
+}
+.result-title {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #5a6070;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  margin-bottom: .6rem;
+}
+.result-value {
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: #e8eaf0;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+.result-sub {
+  font-size: 0.7rem;
+  color: #5a6070;
+  margin-top: .5rem;
+}
+
+/* ── Stats row ── */
+.stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .75rem;
+  margin-bottom: 1.25rem;
+}
+.stat-box {
+  background: #161820;
+  border: 1px solid #2c2f42;
+  border-radius: 10px;
+  padding: 1rem;
+  text-align: center;
+}
+.stat-val { font-size: 1rem; font-weight: 700; color: #e8eaf0; }
+.stat-lbl { font-size: 0.65rem; color: #5a6070; margin-top: 3px; }
+
+/* ── Insight card ── */
+.insight-card {
+  background: #22253a;
+  border: 1px solid #2c2f42;
+  border-radius: 14px;
+  padding: 1.3rem 1.4rem;
+}
+.insight-item {
+  display: flex;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid #2c2f42;
+  font-size: 0.78rem;
+  color: #8b90a0;
+  align-items: flex-start;
+  line-height: 1.5;
+}
+.insight-item:last-child { border-bottom: none; padding-bottom: 0; }
+.i-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #4f8ef7;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+
+/* ── Bottom charts ── */
+.chart-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+/* ── Hide Streamlit chrome ── */
+#MainMenu, footer, [data-testid="stToolbar"],
+[data-testid="stDecoration"], [data-testid="stStatusWidget"] { display: none !important; }
+div[data-testid="stVerticalBlock"] > div { gap: 0 !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# ─── MODEL CONSTANTS (replika model_rumah.pkl) ─────────────────────────────────
+# ── MODEL ───────────────────────────────────────────────────────────────────────
 CENTER = np.array([210, 161, 4, 3, 2, 8, 29629629.6])
 SCALE  = np.array([200, 154.25, 1, 1, 1, 3, 11973304.5])
 COEF   = np.array([-0.01692395, 0.60847173, 0.0253252, 0.01994662,
                     0.02336471, 0.01509061, 0.38533976])
 INTERCEPT = 22.12362834422056
 
-
 def predict_price(lb, lt, kt, km, grs, hlt):
-    """Linear Regression with RobustScaler + log-inverse."""
-    tr = kt + km
+    tr  = kt + km
     raw = np.array([lb, lt, kt, km, grs, tr, hlt], dtype=float)
-    lp = INTERCEPT + np.sum(COEF * (raw - CENTER) / SCALE)
+    lp  = INTERCEPT + np.sum(COEF * (raw - CENTER) / SCALE)
     return np.expm1(lp)
 
-
 def fmt_rp(v):
-    """Format rupiah into billions (M) or millions (Jt)."""
     if v >= 1e9:
-        return f"Rp {v/1e9:.2f} Miliar"
+        return f"Rp {v/1e9:.2f} M"
     return f"Rp {v/1e6:,.0f} Jt"
 
-
 def fmt_short(v):
-    if v >= 1e9:
-        return f"{v/1e9:.2f} M"
+    if v >= 1e9: return f"{v/1e9:.2f} M"
     return f"{v/1e6:,.0f} Jt"
 
+# ── CHART THEME ─────────────────────────────────────────────────────────────────
+BG   = "#22253a"
+GRID = "rgba(255,255,255,0.05)"
+TICK = "rgba(200,205,220,0.45)"
 
-# ─── HEADER ────────────────────────────────────────────────────────────────────
-col_logo, col_badge = st.columns([6, 1])
-with col_logo:
-    st.markdown(
-        "<h1 style='font-size:1.8rem;font-weight:500;letter-spacing:-0.03em;"
-        "color:#fff!important;margin-bottom:0'>prop<span style='color:#4f8ef7'>AI</span> Jakarta</h1>",
-        unsafe_allow_html=True,
-    )
-with col_badge:
-    st.markdown("<div style='margin-top:0.6rem'><span class='badge'>Machine Learning Model</span></div>",
+# ── HEADER ──────────────────────────────────────────────────────────────────────
+st.markdown("""
+<div class="app-wrap" id="top">
+  <div class="topbar">
+    <div class="logo">prop<span class="ai">AI</span> Jakarta</div>
+    <div class="badge">Machine Learning Model</div>
+  </div>
+""", unsafe_allow_html=True)
+
+# ── MAIN LAYOUT ─────────────────────────────────────────────────────────────────
+col_left, col_right = st.columns([1, 1], gap="large")
+
+# ───────────────── LEFT PANEL ──────────────────────────────────────────────────
+with col_left:
+    st.markdown("<p class='sec-label' style='font-size:.65rem;font-weight:700;color:#5a6070;text-transform:uppercase;letter-spacing:.12em;margin-bottom:1rem'>Parameter Properti</p>",
                 unsafe_allow_html=True)
 
-st.markdown("<hr style='border:1px solid #1e2736;margin:0.75rem 0 1.5rem'>", unsafe_allow_html=True)
-
-# ─── MAIN LAYOUT ───────────────────────────────────────────────────────────────
-left, right = st.columns([1.5, 1], gap="medium")
-
-# ── LEFT: INPUT ────────────────────────────────────────────────────────────────
-with left:
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
-    st.markdown("<div class='section-label'>Parameter Properti</div>", unsafe_allow_html=True)
-
-    c1, c2 = st.columns(2)
+    c1, c2 = st.columns(2, gap="medium")
     with c1:
-        lb = st.number_input("Luas Bangunan (m²)", min_value=0, value=0, step=10, key="lb")
-        kt = st.number_input("Kamar Tidur", min_value=0, value=0, step=1, key="kt")
-        grs = st.number_input("Garasi", min_value=0, value=0, step=1, key="grs")
+        lb  = st.number_input("Luas bangunan (m²)", min_value=0, value=100, step=10)
+        kt  = st.number_input("Kamar tidur",         min_value=0, value=3,   step=1)
+        grs = st.number_input("Garasi",               min_value=0, value=1,   step=1)
     with c2:
-        lt = st.number_input("Luas Tanah (m²)", min_value=0, value=0, step=10, key="lt")
-        km = st.number_input("Kamar Mandi", min_value=0, value=0, step=1, key="km")
+        lt  = st.number_input("Luas tanah (m²)",     min_value=0, value=120, step=10)
+        km  = st.number_input("Kamar mandi",          min_value=0, value=2,   step=1)
 
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    # Harga/m² tanah — dengan chip buttons
-    st.markdown("<label style='font-size:0.85rem;color:#9ca3af'>Harga/m² Tanah (Rp)</label>",
+    st.markdown("<p style='font-size:.78rem;color:#8b90a0;margin:.8rem 0 .4rem'>Harga/m² tanah (Rp)</p>",
                 unsafe_allow_html=True)
 
+    # Chip buttons
     PRESETS = {"15 jt": 15_000_000, "30 jt (median)": 29_629_630,
                "40 jt": 40_000_000, "60 jt": 60_000_000}
-
-    chip_cols = st.columns(4)
-    clicked_preset = None
-    for i, (label, val) in enumerate(PRESETS.items()):
+    chip_cols = st.columns(4, gap="small")
+    for i, (lbl, val) in enumerate(PRESETS.items()):
         with chip_cols[i]:
-            if st.button(label, key=f"chip_{i}"):
-                clicked_preset = val
+            if st.button(lbl, key=f"chip_{i}"):
+                st.session_state["hlt"] = val
 
-    if clicked_preset is not None:
-        st.session_state["hlt"] = clicked_preset
+    hlt = st.number_input("", min_value=0,
+                          value=st.session_state.get("hlt", 5_000_000),
+                          step=1_000_000, label_visibility="collapsed")
 
-    hlt = st.number_input("", min_value=0, value=st.session_state.get("hlt", 0),
-                          step=1_000_000, key="hlt", label_visibility="collapsed")
+    st.markdown("<div style='margin-top:.75rem'></div>", unsafe_allow_html=True)
+    predict_btn = st.button("Prediksi harga", key="predict_main")
 
+    # ── Bar chart (bottom-left) ──
     st.markdown("<br>", unsafe_allow_html=True)
-    predict_clicked = st.button("🔍  Prediksi Harga Rumah", key="predict_btn")
-    st.markdown("</div>", unsafe_allow_html=True)
-
-# ── RIGHT: RESULT ───────────────────────────────────────────────────────────────
-with right:
-    # Run prediction
-    if predict_clicked or st.session_state.get("has_predicted"):
-        st.session_state["has_predicted"] = True
-        price = predict_price(lb, lt, kt, km, grs, hlt)
-        price_str = fmt_rp(price)
-        s1 = fmt_short(price / lb) if lb > 0 else "—"
-        s2 = fmt_short(price / lt) if lt > 0 else "—"
-        sub_text = "Linear Regression · RobustScaler · Log-inverse"
-    else:
-        price = None
-        price_str = "Rp 0"
-        s1, s2 = "—", "—"
-        sub_text = "Isi parameter lalu klik prediksi"
-
-    # Result card
-    st.markdown(f"""
-    <div class='card' style='text-align:center;padding:1.75rem 1.5rem'>
-      <div class='result-label'>Estimasi Harga Properti</div>
-      <div class='result-amount'>{price_str}</div>
-      <div class='result-sub'>{sub_text}</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # Stats
-    sc1, sc2 = st.columns(2)
-    with sc1:
-        st.markdown(f"""
-        <div class='stat-box'>
-          <div class='stat-val'>{s1}</div>
-          <div class='stat-lbl'>Rp/m² bangunan</div>
-        </div>""", unsafe_allow_html=True)
-    with sc2:
-        st.markdown(f"""
-        <div class='stat-box'>
-          <div class='stat-val'>{s2}</div>
-          <div class='stat-lbl'>Rp/m² tanah</div>
-        </div>""", unsafe_allow_html=True)
-
-    # Insight card
-    st.markdown("""
-    <div class='card' style='margin-top:1rem'>
-      <div class='section-label'>Insight Model</div>
-      <div class='insight-item'>
-        <div class='dot'></div>
-        <span>LB dan LT menjadi fitur paling berpengaruh terhadap harga rumah.</span>
-      </div>
-      <div class='insight-item'>
-        <div class='dot'></div>
-        <span>Model dilatih dengan data scraping listing properti wilayah DKI Jakarta.</span>
-      </div>
-      <div class='insight-item'>
-        <div class='dot'></div>
-        <span>Prediksi menggunakan Linear Regression + RobustScaler dengan target log-transform.</span>
-      </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-# ─── BOTTOM: CHARTS ────────────────────────────────────────────────────────────
-st.markdown("<br>", unsafe_allow_html=True)
-chart_l, chart_r = st.columns(2, gap="medium")
-
-CHART_BG   = "#111827"
-CHART_GRID = "rgba(255,255,255,0.07)"
-CHART_TICK = "rgba(255,255,255,0.35)"
-BLUE_SHADES = ["#2563eb", "#1d4ed8", "#3b82f6", "#60a5fa", "#93c5fd"]
-
-# Bar chart — Distribusi Harga Referensi Jakarta
-with chart_l:
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
-    st.markdown("<div class='section-label'>Distribusi Harga Referensi Jakarta</div>",
+    st.markdown("<p style='font-size:.65rem;font-weight:700;color:#5a6070;text-transform:uppercase;letter-spacing:.12em;margin-bottom:.6rem'>Distribusi Harga Referensi Jakarta</p>",
                 unsafe_allow_html=True)
-    wilayah = ["Jak-Pus", "Jak-Sel", "Jak-Bar", "Jak-Tim", "Jak-Ut"]
-    median_harga = [3800, 5200, 2900, 2400, 2100]
+
+    wilayah = ["Jak-Pus","Jak-Sel","Jak-Bar","Jak-Tim","Jak-Ut"]
+    median_h = [3800, 5200, 2900, 2400, 2100]
 
     fig_bar = go.Figure(go.Bar(
-        x=wilayah, y=median_harga,
-        marker_color=BLUE_SHADES,
-        text=[f"Rp {v} Jt" for v in median_harga],
+        x=median_h, y=wilayah, orientation="h",
+        marker_color=["#4f8ef7","#3b7de8","#6aa3f9","#8dbeff","#b0d4ff"],
+        text=[f"{v/1000:.1f}M" if v>=1000 else f"{v}Jt" for v in median_h],
         textposition="outside",
-        textfont=dict(color=CHART_TICK, size=11),
+        textfont=dict(color=TICK, size=10),
     ))
     fig_bar.update_layout(
-        paper_bgcolor=CHART_BG, plot_bgcolor=CHART_BG,
-        margin=dict(l=10, r=10, t=10, b=10), height=220,
-        xaxis=dict(tickfont=dict(color=CHART_TICK, size=11), gridcolor=CHART_GRID,
-                   showgrid=False, linecolor="#1e2736"),
-        yaxis=dict(tickfont=dict(color=CHART_TICK, size=11), gridcolor=CHART_GRID,
-                   ticksuffix=" Jt", zeroline=False),
+        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+        margin=dict(l=0, r=20, t=0, b=0), height=160,
+        xaxis=dict(tickfont=dict(color=TICK, size=10), gridcolor=GRID,
+                   showgrid=True, zeroline=False, showticklabels=False),
+        yaxis=dict(tickfont=dict(color=TICK, size=11), gridcolor=GRID,
+                   showgrid=False, categoryorder="array",
+                   categoryarray=list(reversed(wilayah))),
         showlegend=False,
     )
     st.plotly_chart(fig_bar, use_container_width=True, config={"displayModeBar": False})
-    st.markdown("</div>", unsafe_allow_html=True)
 
-# Line chart — Sensitivitas Harga/m²
-with chart_r:
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
-    st.markdown("<div class='section-label'>Sensitivitas Harga/m²</div>",
+# ───────────────── RIGHT PANEL ─────────────────────────────────────────────────
+with col_right:
+    # Prediction state
+    if predict_btn:
+        st.session_state["has_pred"] = True
+        st.session_state["price"] = predict_price(lb, lt, kt, km, grs, hlt)
+        st.session_state["lb"] = lb
+        st.session_state["lt"] = lt
+        st.session_state["kt"] = kt
+        st.session_state["km"] = km
+        st.session_state["grs"] = grs
+
+    if st.session_state.get("has_pred"):
+        price = st.session_state["price"]
+        p_lb  = st.session_state.get("lb", lb)
+        p_lt  = st.session_state.get("lt", lt)
+        price_str = fmt_rp(price)
+        s1 = fmt_short(price / p_lb) if p_lb > 0 else "—"
+        s2 = fmt_short(price / p_lt) if p_lt > 0 else "—"
+        sub = "Model: Regression · Scaled · Log-inverse"
+    else:
+        price = None
+        price_str = "—"
+        s1 = s2 = "—"
+        sub = "Model: Regression · Scaled · Log-inverse"
+
+    # Result card
+    st.markdown(f"""
+    <div class="result-card">
+      <div class="result-title">Estimasi Harga Properti</div>
+      <div class="result-value">{price_str}</div>
+      <div class="result-sub">{"Isi parameter &amp; klik prediksi" if not st.session_state.get("has_pred") else sub}</div>
+      <div class="result-sub" style="margin-top:.3rem">{sub if not st.session_state.get("has_pred") else ""}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ── Tren Harga Simulasi (line chart) ──
+    st.markdown("<p style='font-size:.65rem;font-weight:700;color:#5a6070;text-transform:uppercase;letter-spacing:.12em;margin-bottom:.5rem'>Tren Harga Simulasi</p>",
                 unsafe_allow_html=True)
 
-    hlt_steps = [10, 15, 20, 25, 30, 40, 50, 60]
-    _lb = lb if lb > 0 else 100
-    _lt = lt if lt > 0 else 120
-    est_prices = [predict_price(_lb, _lt, kt, km, grs, v * 1e6) / 1e6 for v in hlt_steps]
+    months = ["Jan","Feb","Mar","Apr","Mei","Jun"]
+    _lb  = st.session_state.get("lb", 100) or 100
+    _lt  = st.session_state.get("lt", 120) or 120
+    _kt  = st.session_state.get("kt", kt)
+    _km  = st.session_state.get("km", km)
+    _grs = st.session_state.get("grs", grs)
+    base_hlt = hlt if hlt > 0 else 5_000_000
+    trend_prices = [
+        predict_price(_lb, _lt, _kt, _km, _grs, base_hlt * (1 + 0.04*i)) / 1e6
+        for i in range(6)
+    ]
 
     fig_line = go.Figure(go.Scatter(
-        x=[f"{v}jt" for v in hlt_steps], y=est_prices,
+        x=months, y=trend_prices,
         mode="lines+markers",
-        line=dict(color="#2563eb", width=2.5),
+        line=dict(color="#4f8ef7", width=2.5),
         fill="tozeroy",
-        fillcolor="rgba(37,99,235,0.15)",
-        marker=dict(color="#2563eb", size=5),
+        fillcolor="rgba(79,142,247,0.12)",
+        marker=dict(color="#4f8ef7", size=5),
     ))
     fig_line.update_layout(
-        paper_bgcolor=CHART_BG, plot_bgcolor=CHART_BG,
-        margin=dict(l=10, r=10, t=10, b=10), height=220,
-        xaxis=dict(tickfont=dict(color=CHART_TICK, size=10), gridcolor=CHART_GRID,
-                   showgrid=False, linecolor="#1e2736",
-                   title=dict(text="Harga/m² tanah", font=dict(color=CHART_TICK, size=11))),
-        yaxis=dict(tickfont=dict(color=CHART_TICK, size=11), gridcolor=CHART_GRID,
-                   ticksuffix=" Jt", zeroline=False),
-        showlegend=False,
-        hovermode="x unified",
+        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+        margin=dict(l=0, r=0, t=5, b=0), height=140,
+        xaxis=dict(tickfont=dict(color=TICK, size=11), showgrid=False,
+                   zeroline=False, linecolor="#2c2f42"),
+        yaxis=dict(showticklabels=False, showgrid=False, zeroline=False),
+        showlegend=False, hovermode="x unified",
     )
     st.plotly_chart(fig_line, use_container_width=True, config={"displayModeBar": False})
-    st.markdown("</div>", unsafe_allow_html=True)
 
-# ─── FOOTER ────────────────────────────────────────────────────────────────────
-st.markdown("""
-<div style='text-align:center;padding:2rem 0 1rem;font-size:0.72rem;color:#374151'>
-  propAI Jakarta · Linear Regression + RobustScaler · Data: DKI Jakarta Property Listings
-</div>
-""", unsafe_allow_html=True)
+    # Stats
+    st.markdown(f"""
+    <div class="stats-row" style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin:.75rem 0">
+      <div class="stat-box">
+        <div class="stat-val">{s1}</div>
+        <div class="stat-lbl">Rp/m² bangunan</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val">{s2}</div>
+        <div class="stat-lbl">Rp/m² tanah</div>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Insight card
+    st.markdown("""
+    <div class="insight-card">
+      <div class="sec-label" style="font-size:.65rem;font-weight:700;color:#5a6070;text-transform:uppercase;letter-spacing:.12em;margin-bottom:.75rem">Insight Model</div>
+      <div class="insight-item">
+        <div class="i-dot"></div>
+        <span>LB &amp; LT adalah fitur terkuat dalam model prediksi harga rumah Jakarta.</span>
+      </div>
+      <div class="insight-item">
+        <div class="i-dot"></div>
+        <span>Harga per m² tanah bervariasi signifikan antar kecamatan di Jakarta.</span>
+      </div>
+      <div class="insight-item">
+        <div class="i-dot"></div>
+        <span>Model dilatih dengan data scraping listing properti wilayah DKI Jakarta.</span>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+st.markdown("</div>", unsafe_allow_html=True)  # close app-wrap
