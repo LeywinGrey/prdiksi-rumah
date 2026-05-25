@@ -39,15 +39,14 @@ with st.expander("➕ Masukkan Harga per Meter Tanah (opsional)"):
     gunakan_harga_manual = st.checkbox("Saya ingin memasukkan harga sendiri")
 
     if gunakan_harga_manual:
-        HARGA = st.number_input(
-            "Harga Rumah (Rp)",
+        HARGA_PER_LT = st.number_input(
+            "Harga per Meter Persegi Tanah (Rp/m²)",
             min_value=0,
             value=0,
-            step=50_000_000,
-            format="%d"
+            step=500_000,
+            format="%d",
+            help="Contoh: jika harga tanah Rp 5.000.000 per m², masukkan 5000000"
         )
-
-        HARGA_PER_LT = HARGA / LT if LT > 0 else DEFAULT_HARGA_PER_LT
 
         # Format Rp yang mudah dibaca
         def format_rupiah(angka):
@@ -63,7 +62,8 @@ with st.expander("➕ Masukkan Harga per Meter Tanah (opsional)"):
             else:
                 return f"Rp {int(angka):,} per meter persegi".replace(",", ".")
 
-        st.info(f"📐 Harga per Meter Tanah: **{format_rupiah(HARGA_PER_LT)}**")
+        if HARGA_PER_LT > 0:
+            st.info(f"📐 Harga per Meter Tanah: **{format_rupiah(HARGA_PER_LT)}**")
     else:
         HARGA_PER_LT = DEFAULT_HARGA_PER_LT
 
