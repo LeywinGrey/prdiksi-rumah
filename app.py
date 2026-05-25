@@ -54,20 +54,19 @@ GRS = st.number_input(
 )
 
 # =========================
-# PILIHAN HARGA TANAH
+# HARGA TANAH
 # =========================
 opsi_harga = st.radio(
     "Harga Tanah",
     [
-        "Gunakan harga default model",
+        "Gunakan hasil perhitungan model",
         "Input harga sendiri"
     ]
 )
 
-# default dari model
-harga_default = 5000000
-
-# jika user input sendiri
+# =========================
+# JIKA INPUT SENDIRI
+# =========================
 if opsi_harga == "Input harga sendiri":
 
     HARGA_PER_LT = st.number_input(
@@ -77,13 +76,20 @@ if opsi_harga == "Input harga sendiri":
         step=500000
     )
 
-# jika pakai default model
+# =========================
+# JIKA OTOMATIS DARI MODEL
+# =========================
 else:
 
-    HARGA_PER_LT = harga_default
+    # mengikuti feature engineering
+    # estimasi sederhana harga tanah
+
+    HARGA_PER_LT = (
+        (LB * 5500000) / LT
+    )
 
     st.info(
-        f"Menggunakan harga default model: Rp {harga_default:,}/m²"
+        f"Harga tanah otomatis model: Rp {HARGA_PER_LT:,.0f}/m²"
     )
 
 # =========================
