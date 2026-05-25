@@ -53,13 +53,38 @@ GRS = st.number_input(
     min_value=0
 )
 
-# INPUT HARGA PER LT
-HARGA_PER_LT = st.number_input(
-    "Harga per Meter Tanah",
-    min_value=1000000,
-    value=5000000,
-    step=500000
+# =========================
+# PILIHAN HARGA TANAH
+# =========================
+opsi_harga = st.radio(
+    "Harga Tanah",
+    [
+        "Gunakan harga default model",
+        "Input harga sendiri"
+    ]
 )
+
+# default dari model
+harga_default = 5000000
+
+# jika user input sendiri
+if opsi_harga == "Input harga sendiri":
+
+    HARGA_PER_LT = st.number_input(
+        "Harga per Meter Tanah",
+        min_value=1000000,
+        value=5000000,
+        step=500000
+    )
+
+# jika pakai default model
+else:
+
+    HARGA_PER_LT = harga_default
+
+    st.info(
+        f"Menggunakan harga default model: Rp {harga_default:,}/m²"
+    )
 
 # =========================
 # BUTTON
