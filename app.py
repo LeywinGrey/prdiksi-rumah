@@ -19,7 +19,7 @@ scaler = pickle.load(
 # =========================
 # TITLE
 # =========================
-st.title("Prediksi Harga Rumah")
+st.title("Prediksi Harga Rumah Wilayah Jakarta")
 
 st.write(
     "Masukkan data rumah untuk memprediksi harga."
