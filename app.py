@@ -53,14 +53,20 @@ GRS = st.number_input(
     min_value=0
 )
 
+# INPUT HARGA PER LT
+HARGA_PER_LT = st.number_input(
+    "Harga per Meter Tanah",
+    min_value=1000000,
+    value=5000000,
+    step=500000
+)
+
 # =========================
 # BUTTON
 # =========================
 if st.button("Prediksi"):
 
     TOTAL_RUANG = KT + KM
-
-    HARGA_PER_LT = 5000000
 
     rumah_baru = pd.DataFrame({
 
@@ -93,13 +99,13 @@ if st.button("Prediksi"):
     if harga >= 1_000_000_000:
 
         hasil = (
-            f"{harga/1_000_000_000:.2f} M"
+            f"Rp {harga/1_000_000_000:.2f} Miliar"
         )
 
     else:
 
         hasil = (
-            f"{harga/1_000_000:.2f} JT"
+            f"Rp {harga/1_000_000:.2f} Juta"
         )
 
     # output
