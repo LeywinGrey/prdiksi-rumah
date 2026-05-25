@@ -25,8 +25,8 @@ html, body, [class*="css"] {
     font-family: 'Inter', sans-serif;
 }
 .stApp {
-    background-color: #f8f9fa;
-    color: #1a1a1a;
+    background-color: #0b0f19;
+    color: #f3f4f6;
 }
 
 #MainMenu, footer, header { visibility: hidden; }
