@@ -1,145 +1,154 @@
-import streamlit as st
-
+# =========================================================
+# IMPORT LIBRARY
+# =========================================================
 import pandas as pd
 import numpy as np
 
+from sklearn.model_selection import train_test_split
+
+from sklearn.preprocessing import StandardScaler
+
+from sklearn.linear_model import LinearRegression
+
+from sklearn.metrics import (
+    mean_absolute_error,
+    mean_squared_error,
+    r2_score
+)
+
 import pickle
 
-# =========================
-# LOAD MODEL
-# =========================
-model = pickle.load(
-    open('model_rumah.pkl', 'rb')
+# =========================================================
+# FEATURE ENGINEERING
+# =========================================================
+
+# TOTAL RUANG
+df_handled['TOTAL_RUANG'] = (
+    df_handled['KT'] +
+    df_handled['KM']
 )
 
-scaler = pickle.load(
-    open('scaler.pkl', 'rb')
+# =========================================================
+# FITUR & TARGET
+# =========================================================
+
+# HAPUS HARGA_PER_LT
+# karena menyebabkan data leakage
+
+X = df_handled[[
+
+    'LB',
+    'LT',
+    'KT',
+    'KM',
+    'GRS',
+    'TOTAL_RUANG'
+
+]]
+
+y = df_handled['HARGA']
+
+# =========================================================
+# TRANSFORMASI LOG TARGET
+# =========================================================
+y_log = np.log1p(y)
+
+# =========================================================
+# SPLIT DATA
+# =========================================================
+X_train, X_test, y_train, y_test = train_test_split(
+
+    X,
+    y_log,
+
+    test_size=0.2,
+    random_state=42
+
 )
 
-# =========================
-# TITLE
-# =========================
-st.title("Prediksi Harga Rumah Wilayah Jakarta")
+# =========================================================
+# SCALING
+# =========================================================
+scaler = StandardScaler()
 
-st.write(
-    "Masukkan data rumah untuk memprediksi harga."
+X_train_scaled = scaler.fit_transform(
+    X_train
 )
 
-# =========================
-# INPUT USER
-# =========================
-LB = st.number_input(
-    "Luas Bangunan",
-    min_value=1
+X_test_scaled = scaler.transform(
+    X_test
 )
 
-LT = st.number_input(
-    "Luas Tanah",
-    min_value=1
+# =========================================================
+# MODEL
+# =========================================================
+model = LinearRegression()
+
+model.fit(
+    X_train_scaled,
+    y_train
 )
 
-KT = st.number_input(
-    "Kamar Tidur",
-    min_value=1
+# =========================================================
+# PREDIKSI
+# =========================================================
+y_pred_log = model.predict(
+    X_test_scaled
 )
 
-KM = st.number_input(
-    "Kamar Mandi",
-    min_value=1
+# balik ke harga asli
+y_pred = np.expm1(
+    y_pred_log
 )
 
-GRS = st.number_input(
-    "Garasi",
-    min_value=0
+y_asli = np.expm1(
+    y_test
 )
 
-# =========================
-# HARGA TANAH
-# =========================
-opsi_harga = st.radio(
-    "Harga Tanah",
-    [
-        "Gunakan hasil perhitungan model",
-        "Input harga sendiri"
-    ]
+# =========================================================
+# EVALUASI
+# =========================================================
+mae = mean_absolute_error(
+    y_asli,
+    y_pred
 )
 
-# =========================
-# JIKA INPUT SENDIRI
-# =========================
-if opsi_harga == "Input harga sendiri":
-
-    HARGA_PER_LT = st.number_input(
-        "Harga per Meter Tanah",
-        min_value=1000000,
-        value=5000000,
-        step=500000
+rmse = np.sqrt(
+    mean_squared_error(
+        y_asli,
+        y_pred
     )
+)
 
-# =========================
-# JIKA OTOMATIS DARI MODEL
-# =========================
-else:
+r2 = r2_score(
+    y_asli,
+    y_pred
+)
 
-    # mengikuti feature engineering
-    # estimasi sederhana harga tanah
+# =========================================================
+# HASIL
+# =========================================================
+hasil = pd.DataFrame({
 
-    HARGA_PER_LT = (
-        (LB * 5500000) / LT
-    )
+    'MAE': [f"Rp {mae:,.0f}"],
+    'RMSE': [f"Rp {rmse:,.0f}"],
+    'R2 Score': [round(r2, 4)]
 
-    st.info(
-        f"Harga tanah otomatis model: Rp {HARGA_PER_LT:,.0f}/m²"
-    )
+})
 
-# =========================
-# BUTTON
-# =========================
-if st.button("Prediksi"):
+print(hasil)
 
-    TOTAL_RUANG = KT + KM
+# =========================================================
+# SAVE MODEL
+# =========================================================
+pickle.dump(
+    model,
+    open('model_rumah.pkl', 'wb')
+)
 
-    rumah_baru = pd.DataFrame({
+pickle.dump(
+    scaler,
+    open('scaler.pkl', 'wb')
+)
 
-        'LB': [LB],
-        'LT': [LT],
-        'KT': [KT],
-        'KM': [KM],
-        'GRS': [GRS],
-        'TOTAL_RUANG': [TOTAL_RUANG],
-        'HARGA_PER_LT': [HARGA_PER_LT]
-
-    })
-
-    # scaling
-    rumah_scaled = scaler.transform(
-        rumah_baru
-    )
-
-    # predict
-    pred_log = model.predict(
-        rumah_scaled
-    )
-
-    # inverse log
-    harga = np.expm1(
-        pred_log
-    )[0]
-
-    # format harga
-    if harga >= 1_000_000_000:
-
-        hasil = (
-            f"Rp {harga/1_000_000_000:.2f} Miliar"
-        )
-
-    else:
-
-        hasil = (
-            f"Rp {harga/1_000_000:.2f} Juta"
-        )
-
-    # output
-    st.success(
-        f"Prediksi Harga Rumah: {hasil}"
-    )
+print("Model berhasil disimpan")
