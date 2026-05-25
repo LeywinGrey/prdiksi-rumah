@@ -1,154 +1,106 @@
-# =========================================================
-# IMPORT LIBRARY
-# =========================================================
+import streamlit as st
+
 import pandas as pd
 import numpy as np
 
-from sklearn.model_selection import train_test_split
-
-from sklearn.preprocessing import StandardScaler
-
-from sklearn.linear_model import LinearRegression
-
-from sklearn.metrics import (
-    mean_absolute_error,
-    mean_squared_error,
-    r2_score
-)
-
 import pickle
 
-# =========================================================
-# FEATURE ENGINEERING
-# =========================================================
-
-# TOTAL RUANG
-df_handled['TOTAL_RUANG'] = (
-    df_handled['KT'] +
-    df_handled['KM']
+# =========================
+# LOAD MODEL
+# =========================
+model = pickle.load(
+    open('model_rumah.pkl', 'rb')
 )
 
-# =========================================================
-# FITUR & TARGET
-# =========================================================
-
-# HAPUS HARGA_PER_LT
-# karena menyebabkan data leakage
-
-X = df_handled[[
-
-    'LB',
-    'LT',
-    'KT',
-    'KM',
-    'GRS',
-    'TOTAL_RUANG'
-
-]]
-
-y = df_handled['HARGA']
-
-# =========================================================
-# TRANSFORMASI LOG TARGET
-# =========================================================
-y_log = np.log1p(y)
-
-# =========================================================
-# SPLIT DATA
-# =========================================================
-X_train, X_test, y_train, y_test = train_test_split(
-
-    X,
-    y_log,
-
-    test_size=0.2,
-    random_state=42
-
+scaler = pickle.load(
+    open('scaler.pkl', 'rb')
 )
 
-# =========================================================
-# SCALING
-# =========================================================
-scaler = StandardScaler()
+# =========================
+# TITLE
+# =========================
+st.title("Prediksi Harga Rumah Wilayah Jakarta")
 
-X_train_scaled = scaler.fit_transform(
-    X_train
+st.write(
+    "Masukkan data rumah untuk memprediksi harga."
 )
 
-X_test_scaled = scaler.transform(
-    X_test
+# =========================
+# INPUT USER
+# =========================
+LB = st.number_input(
+    "Luas Bangunan",
+    min_value=1
 )
 
-# =========================================================
-# MODEL
-# =========================================================
-model = LinearRegression()
-
-model.fit(
-    X_train_scaled,
-    y_train
+LT = st.number_input(
+    "Luas Tanah",
+    min_value=1
 )
 
-# =========================================================
-# PREDIKSI
-# =========================================================
-y_pred_log = model.predict(
-    X_test_scaled
+KT = st.number_input(
+    "Kamar Tidur",
+    min_value=1
 )
 
-# balik ke harga asli
-y_pred = np.expm1(
-    y_pred_log
+KM = st.number_input(
+    "Kamar Mandi",
+    min_value=1
 )
 
-y_asli = np.expm1(
-    y_test
+GRS = st.number_input(
+    "Garasi",
+    min_value=0
 )
 
-# =========================================================
-# EVALUASI
-# =========================================================
-mae = mean_absolute_error(
-    y_asli,
-    y_pred
-)
+# =========================
+# BUTTON
+# =========================
+if st.button("Prediksi"):
 
-rmse = np.sqrt(
-    mean_squared_error(
-        y_asli,
-        y_pred
+    # feature engineering
+    TOTAL_RUANG = KT + KM
+
+    rumah_baru = pd.DataFrame({
+
+        'LB': [LB],
+        'LT': [LT],
+        'KT': [KT],
+        'KM': [KM],
+        'GRS': [GRS],
+        'TOTAL_RUANG': [TOTAL_RUANG]
+
+    })
+
+    # scaling
+    rumah_scaled = scaler.transform(
+        rumah_baru
     )
-)
 
-r2 = r2_score(
-    y_asli,
-    y_pred
-)
+    # predict
+    pred_log = model.predict(
+        rumah_scaled
+    )
 
-# =========================================================
-# HASIL
-# =========================================================
-hasil = pd.DataFrame({
+    # inverse log
+    harga = np.expm1(
+        pred_log
+    )[0]
 
-    'MAE': [f"Rp {mae:,.0f}"],
-    'RMSE': [f"Rp {rmse:,.0f}"],
-    'R2 Score': [round(r2, 4)]
+    # format harga
+    if harga >= 1_000_000_000:
 
-})
+        hasil = (
+            f"Rp {harga/1_000_000_000:.2f} Miliar"
+        )
 
-print(hasil)
+    else:
 
-# =========================================================
-# SAVE MODEL
-# =========================================================
-pickle.dump(
-    model,
-    open('model_rumah.pkl', 'wb')
-)
+        hasil = (
+            f"Rp {harga/1_000_000:.2f} Juta"
+        )
 
-pickle.dump(
-    scaler,
-    open('scaler.pkl', 'wb')
-)
-
-print("Model berhasil disimpan")
+    # output
+    st.success(
+        f"Prediksi Harga Rumah: {hasil}"
+    )
