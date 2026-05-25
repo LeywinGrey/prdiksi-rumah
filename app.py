@@ -33,21 +33,37 @@ GRS = st.number_input("Garasi", min_value=0)
 with st.expander("➕ Masukkan Harga per Meter Tanah (opsional)"):
     st.caption(
         "Jika tidak diisi, harga per meter tanah akan menggunakan "
-        "nilai median dari data training "
-        f"(Rp {DEFAULT_HARGA_PER_LT/1_000_000:.1f} Juta/m²)."
+        "nilai median dari data training yaitu "
+        "Rp 29.629.629 per meter persegi."
     )
     gunakan_harga_manual = st.checkbox("Saya ingin memasukkan harga sendiri")
 
     if gunakan_harga_manual:
         HARGA = st.number_input(
             "Harga Rumah (Rp)",
-            min_value=100_000_000,
+            min_value=0,
             value=1_000_000_000,
             step=50_000_000,
+            format="%d"
         )
+
         HARGA_PER_LT = HARGA / LT if LT > 0 else DEFAULT_HARGA_PER_LT
-        label = f"Rp {HARGA_PER_LT/1_000_000:.2f} Juta/m²"
-        st.info(f"📐 Harga per Meter Tanah: **{label}**")
+
+        # Format Rp yang mudah dibaca
+        def format_rupiah(angka):
+            if angka >= 1_000_000_000:
+                return f"Rp {angka/1_000_000_000:.2f} miliar per meter persegi"
+            elif angka >= 1_000_000:
+                miliar_part = int(angka) // 1_000_000
+                juta_sisa = int(angka) % 1_000_000 // 1_000
+                if juta_sisa > 0:
+                    return f"Rp {miliar_part}.{juta_sisa:03d}.000 per meter persegi"
+                else:
+                    return f"Rp {miliar_part}.000.000 per meter persegi"
+            else:
+                return f"Rp {int(angka):,} per meter persegi".replace(",", ".")
+
+        st.info(f"📐 Harga per Meter Tanah: **{format_rupiah(HARGA_PER_LT)}**")
     else:
         HARGA_PER_LT = DEFAULT_HARGA_PER_LT
 
@@ -73,8 +89,8 @@ if st.button("Prediksi"):
     harga = np.expm1(pred_log)[0]
 
     if harga >= 1_000_000_000:
-        hasil = f"Rp {harga/1_000_000_000:.2f} Miliar"
+        hasil = f"Rp {harga/1_000_000_000:.2f} miliar"
     else:
-        hasil = f"Rp {harga/1_000_000:.2f} Juta"
+        hasil = f"Rp {harga/1_000_000:.2f} juta"
 
     st.success(f"Prediksi Harga Rumah: {hasil}")
