@@ -42,7 +42,7 @@ with st.expander("➕ Masukkan Harga per Meter Tanah (opsional)"):
         HARGA = st.number_input(
             "Harga Rumah (Rp)",
             min_value=0,
-            value=1_000_000_000,
+            value=0,
             step=50_000_000,
             format="%d"
         )
