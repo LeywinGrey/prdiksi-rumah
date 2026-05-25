@@ -26,7 +26,7 @@ html, body, [class*="css"] {
     font-family: 'DM Sans', sans-serif;
 }
 .stApp {
-    background-color: #0a0d12;
+    background-color: #0d1117;
     color: #e8eaf0;
 }
 
@@ -36,8 +36,8 @@ html, body, [class*="css"] {
 
 /* ---- Hero Bar ---- */
 .hero-bar {
-    background: #0f1520;
-    border-bottom: 1px solid rgba(99,179,237,0.12);
+    background: #111827;
+    border-bottom: 1px solid #1e293b;
     padding: 16px 32px;
     display: flex;
     align-items: center;
@@ -48,14 +48,14 @@ html, body, [class*="css"] {
     font-family: 'Syne', sans-serif;
     font-size: 22px;
     font-weight: 700;
-    color: #fff;
+    color: #f1f5f9;
     letter-spacing: -0.02em;
 }
-.hero-logo span { color: #38bdf8; }
+.hero-logo span { color: #0ea5e9; }
 .hero-badge {
-    background: rgba(56,189,248,0.1);
-    border: 1px solid rgba(56,189,248,0.25);
-    color: #38bdf8;
+    background: #0c2233;
+    border: 1px solid #164e63;
+    color: #0ea5e9;
     font-size: 11px;
     font-weight: 500;
     padding: 4px 14px;
@@ -69,7 +69,7 @@ html, body, [class*="css"] {
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.12em;
-    color: #4a9eca;
+    color: #0ea5e9;
     text-transform: uppercase;
     display: flex;
     align-items: center;
@@ -81,7 +81,7 @@ html, body, [class*="css"] {
     display: inline-block;
     width: 3px;
     height: 14px;
-    background: #38bdf8;
+    background: #0ea5e9;
     border-radius: 2px;
 }
 
@@ -93,23 +93,23 @@ div[data-testid="stNumberInput"] label {
     letter-spacing: 0.04em !important;
 }
 div[data-testid="stNumberInput"] input {
-    background: #0d1420 !important;
-    border: 1px solid rgba(255,255,255,0.08) !important;
+    background: #111827 !important;
+    border: 1px solid #1e293b !important;
     border-radius: 10px !important;
     color: #e8eaf0 !important;
     font-size: 15px !important;
     font-family: 'DM Sans', sans-serif !important;
 }
 div[data-testid="stNumberInput"] input:focus {
-    border-color: rgba(56,189,248,0.4) !important;
-    background: #0f1a28 !important;
+    border-color: #0ea5e9 !important;
+    background: #0c1a27 !important;
     box-shadow: none !important;
 }
 
 /* ---- Button ---- */
 div[data-testid="stButton"] button {
     width: 100%;
-    background: linear-gradient(135deg, #0369a1, #0ea5e9) !important;
+    background: #0ea5e9 !important;
     border: none !important;
     border-radius: 12px !important;
     color: #fff !important;
@@ -121,14 +121,15 @@ div[data-testid="stButton"] button {
     transition: all 0.25s !important;
 }
 div[data-testid="stButton"] button:hover {
+    background: #0284c7 !important;
     transform: translateY(-1px) !important;
-    box-shadow: 0 8px 24px rgba(14,165,233,0.3) !important;
+    box-shadow: none !important;
 }
 
 /* ---- Result card ---- */
 .result-card {
-    background: linear-gradient(135deg, #0c1628, #0f1e35);
-    border: 1px solid rgba(56,189,248,0.2);
+    background: #0f172a;
+    border: 1px solid #1e3a5f;
     border-radius: 16px;
     padding: 28px;
     text-align: center;
@@ -137,7 +138,7 @@ div[data-testid="stButton"] button:hover {
 .result-label {
     font-size: 11px;
     letter-spacing: 0.12em;
-    color: #4a9eca;
+    color: #0ea5e9;
     font-weight: 600;
     text-transform: uppercase;
     margin-bottom: 12px;
@@ -146,24 +147,24 @@ div[data-testid="stButton"] button:hover {
     font-family: 'Syne', sans-serif;
     font-size: 34px;
     font-weight: 700;
-    color: #38bdf8;
+    color: #0ea5e9;
     line-height: 1.2;
 }
 .result-placeholder {
     font-family: 'DM Sans', sans-serif;
     font-size: 14px;
-    color: #1e3a4a;
+    color: #334155;
 }
 .result-sub {
     font-size: 11px;
-    color: #1e3a4a;
+    color: #334155;
     margin-top: 8px;
 }
 
 /* ---- Stat card ---- */
 .stat-card {
-    background: #0a0d12;
-    border: 1px solid rgba(255,255,255,0.05);
+    background: #111827;
+    border: 1px solid #1e293b;
     border-radius: 10px;
     padding: 16px;
     text-align: center;
@@ -176,15 +177,15 @@ div[data-testid="stButton"] button:hover {
 }
 .stat-lbl {
     font-size: 11px;
-    color: #334155;
+    color: #475569;
     margin-top: 4px;
     letter-spacing: 0.04em;
 }
 
 /* ---- Info card ---- */
 .insight-card {
-    background: #0d1117;
-    border: 1px solid rgba(255,255,255,0.05);
+    background: #111827;
+    border: 1px solid #1e293b;
     border-radius: 16px;
     padding: 18px 20px;
     margin-top: 16px;
@@ -194,9 +195,9 @@ div[data-testid="stButton"] button:hover {
     align-items: flex-start;
     gap: 10px;
     padding: 8px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
+    border-bottom: 1px solid #1e293b;
     font-size: 12px;
-    color: #475569;
+    color: #64748b;
     line-height: 1.5;
 }
 .tip-item:last-child { border-bottom: none; padding-bottom: 0; }
@@ -204,8 +205,7 @@ div[data-testid="stButton"] button:hover {
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: #38bdf8;
-    opacity: 0.6;
+    background: #0ea5e9;
     flex-shrink: 0;
     margin-top: 5px;
 }
@@ -213,14 +213,14 @@ div[data-testid="stButton"] button:hover {
 /* ---- Divider ---- */
 .divider {
     border: none;
-    border-top: 1px solid rgba(255,255,255,0.06);
+    border-top: 1px solid #1e293b;
     margin: 20px 0;
 }
 
 /* ---- Chart wrapper ---- */
 .chart-wrap {
-    background: #0d1117;
-    border: 1px solid rgba(255,255,255,0.06);
+    background: #111827;
+    border: 1px solid #1e293b;
     border-radius: 16px;
     padding: 18px;
     margin-top: 16px;
@@ -267,23 +267,21 @@ def get_kelas(val: float) -> str:
 def make_bar_chart():
     wilayah = ['Jak-Pus', 'Jak-Sel', 'Jak-Bar', 'Jak-Tim', 'Jak-Ut']
     harga   = [3.8, 5.2, 2.9, 2.4, 2.1]
-    colors  = ['rgba(14,165,233,0.65)', 'rgba(14,165,233,0.90)',
-               'rgba(14,165,233,0.55)', 'rgba(14,165,233,0.45)',
-               'rgba(14,165,233,0.40)']
+    colors  = ['#0369a1', '#0ea5e9', '#0284c7', '#075985', '#0c4a6e']
     fig = go.Figure(go.Bar(
         x=wilayah, y=harga,
-        marker=dict(color=colors, line=dict(color='#0ea5e9', width=1)),
+        marker=dict(color=colors, line=dict(color='#0ea5e9', width=0)),
         text=[f'Rp {h}M' for h in harga],
         textposition='outside',
-        textfont=dict(color='#475569', size=11)
+        textfont=dict(color='#64748b', size=11)
     ))
     fig.update_layout(
         paper_bgcolor='rgba(0,0,0,0)',
         plot_bgcolor='rgba(0,0,0,0)',
         margin=dict(l=0, r=0, t=10, b=0),
         height=200,
-        xaxis=dict(tickfont=dict(color='#475569', size=11), showgrid=False, zeroline=False),
-        yaxis=dict(tickfont=dict(color='#334155', size=10), gridcolor='rgba(255,255,255,0.04)',
+        xaxis=dict(tickfont=dict(color='#64748b', size=11), showgrid=False, zeroline=False),
+        yaxis=dict(tickfont=dict(color='#475569', size=10), gridcolor='#1e293b',
                    zeroline=False, ticksuffix='M'),
         showlegend=False
     )
@@ -301,10 +299,10 @@ def make_trend_chart(base_harga: float = None):
     fig = go.Figure(go.Scatter(
         x=months, y=data,
         mode='lines+markers',
-        line=dict(color='#38bdf8', width=2),
-        marker=dict(color='#38bdf8', size=5),
+        line=dict(color='#0ea5e9', width=2),
+        marker=dict(color='#0ea5e9', size=5),
         fill='tozeroy',
-        fillcolor='rgba(56,189,248,0.07)',
+        fillcolor='#0c2233',
         hovertemplate='%{x}: Rp %{y:.2f}M<extra></extra>'
     ))
     fig.update_layout(
@@ -312,8 +310,8 @@ def make_trend_chart(base_harga: float = None):
         plot_bgcolor='rgba(0,0,0,0)',
         margin=dict(l=0, r=0, t=10, b=0),
         height=150,
-        xaxis=dict(tickfont=dict(color='#334155', size=10), showgrid=False, zeroline=False),
-        yaxis=dict(tickfont=dict(color='#334155', size=10), gridcolor='rgba(255,255,255,0.04)',
+        xaxis=dict(tickfont=dict(color='#475569', size=10), showgrid=False, zeroline=False),
+        yaxis=dict(tickfont=dict(color='#475569', size=10), gridcolor='#1e293b',
                    zeroline=False, ticksuffix='M'),
         showlegend=False
     )
